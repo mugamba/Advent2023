@@ -1,40 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿
+var testArrayLetters = new Dictionary<string, string> {
+    { "one", "1" },
+    { "two", "2" },
+    { "three", "3" },
+    { "four", "4" },
+    { "five",  "5" },
+    { "six", "6" },
+    { "seven",  "7" },
+    { "eight", "8" },
+    { "nine",  "9" }
+};
 
-namespace Task
+var testArrayNumbers = new List<string> {  "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+var lines = File.ReadAllLines("input.txt");
+var listOfAll = new List<int>();
+
+foreach (var line in lines)
 {
-    class Program
+    var mostLeftIndex = line.Length;
+    var mostRightIndex = 0;
+    var mostLeftValue = "y";
+    var mostRightValue = "y";
+
+    foreach (var item in testArrayNumbers)
     {
 
-
-   
-
-
-
-        static void Main(string[] args)
+        if (line.IndexOf(item) <= mostLeftIndex && line.IndexOf(item) >= 0)
         {
+            mostLeftIndex = line.IndexOf(item);
+            mostLeftValue = item;
+        }
 
-           var t =  "text".LastIndexOf("t");
-
-            var lines = File.ReadAllLines("input.txt").Select(o => String.Join("", o.ToCharArray().Where(c => ).ToArray())).ToList();
-            //var listOfAll = new List<int>(); 
-
-            //foreach (var line in lines)
-            //{
-            //    var num1 = line.First();
-            //    var num2 = line.Last();
-            //    listOfAll.Add(Int32.Parse(num1.ToString() + num2.ToString()));
-            //}
-
-
-        //var maxElf = list.Max();
-
-
-
-        //Console.WriteLine("Result is {0}", listOfAll.Sum());
-        Console.ReadKey();
+        if (line.LastIndexOf(item) >= mostRightIndex && line.LastIndexOf(item) >= 0)
+        {
+            mostRightIndex = line.LastIndexOf(item);
+            mostRightValue = item;
         }
     }
+
+    foreach (var item in testArrayLetters.Keys)
+    {
+        if (line.IndexOf(item) <= mostLeftIndex && line.IndexOf(item)>=0)
+        {
+            mostLeftIndex = line.IndexOf(item);
+            mostLeftValue = testArrayLetters[item].ToString();
+        }
+
+        if (line.LastIndexOf(item) >= mostRightIndex && line.LastIndexOf(item) >= 0)
+        {
+            mostRightIndex = line.LastIndexOf(item);
+            mostRightValue = testArrayLetters[item].ToString();
+        }
+
+    }
+
+    
+
+    listOfAll.Add(Int32.Parse(mostLeftValue + mostRightValue));
+
+    
 }
+
+
+Console.WriteLine(listOfAll.Sum());
+Console.ReadKey();
