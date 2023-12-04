@@ -2,31 +2,19 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+var lines = File.ReadAllLines("input.txt");
+var pattern = @"\d|one|two|three|four|five|six|seven|eight|nine";
 
-
-var text = File.ReadAllText("input.txt");
-var sol = new Solution();
-
-var result = sol.Solve(text, @"\d|one|two|three|four|five|six|seven|eight|nine");
+var result = 0;
+foreach (var line in lines)
+{
+    var first = Regex.Match(line, pattern).Value;
+    var last = Regex.Match(line, pattern, RegexOptions.RightToLeft).Value;
+    result += ParseMatch(first) * 10 + ParseMatch(last);
+}
 
 Console.WriteLine(result);
 Console.ReadKey();
-
-class Solution 
-{
-
-    public object PartOne(string input) =>
-        Solve(input, @"\d");
-
-    public object PartTwo(string input) =>
-        Solve(input, @"\d|one|two|three|four|five|six|seven|eight|nine");
-
-    public int Solve(string input, string rx) => (
-        from line in input.Split("\n")
-        let first = Regex.Match(line, rx)
-        let last = Regex.Match(line, rx, RegexOptions.RightToLeft)
-        select ParseMatch(first.Value) * 10 + ParseMatch(last.Value)
-    ).Sum();
 
     int ParseMatch(string st) => st switch
     {
@@ -41,4 +29,3 @@ class Solution
         "nine" => 9,
         var d => int.Parse(d)
     };
-}
