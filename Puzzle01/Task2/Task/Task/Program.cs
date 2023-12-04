@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Generic;
+
 var testArrayLetters = new Dictionary<string, string> {
     { "one", "1" },
     { "two", "2" },
@@ -17,48 +19,45 @@ var listOfAll = new List<int>();
 
 foreach (var line in lines)
 {
-    var mostLeftIndex = line.Length;
-    var mostRightIndex = 0;
-    var mostLeftValue = "y";
-    var mostRightValue = "y";
+    List<Tuple<string, int, int>> mostleft = new List<Tuple<string, int, int>>();
+    List<Tuple<string, int, int>>mostRight = new List<Tuple<string, int, int>>();
 
     foreach (var item in testArrayNumbers)
     {
+        var index = line.IndexOf(item);
+        if (index >= 0)
+            mostleft.Add(new Tuple<string, int, int>(item, index, index));
 
-        if (line.IndexOf(item) <= mostLeftIndex && line.IndexOf(item) >= 0)
-        {
-            mostLeftIndex = line.IndexOf(item);
-            mostLeftValue = item;
-        }
+        var lastIndex = line.LastIndexOf(item);
+        if (lastIndex >= 0)
+            mostRight.Add(new Tuple<string, int, int>(item, lastIndex, lastIndex));
 
-        if (line.LastIndexOf(item) >= mostRightIndex && line.LastIndexOf(item) >= 0)
-        {
-            mostRightIndex = line.LastIndexOf(item);
-            mostRightValue = item;
-        }
     }
 
     foreach (var item in testArrayLetters.Keys)
     {
-        if (line.IndexOf(item) <= mostLeftIndex && line.IndexOf(item)>=0)
-        {
-            mostLeftIndex = line.IndexOf(item);
-            mostLeftValue = testArrayLetters[item].ToString();
-        }
+        var index = line.IndexOf(item);
+        if (index >= 0)
+            mostleft.Add(new Tuple<string, int, int>(testArrayLetters[item], index, index + item.Length-1));
 
-        if (line.LastIndexOf(item) >= mostRightIndex && line.LastIndexOf(item) >= 0)
-        {
-            mostRightIndex = line.LastIndexOf(item);
-            mostRightValue = testArrayLetters[item].ToString();
-        }
-
+        var lastIndex = line.LastIndexOf(item);
+        if (lastIndex >= 0)
+            mostRight.Add(new Tuple<string, int, int>(testArrayLetters[item], lastIndex, lastIndex + item.Length-1));
     }
 
-    
+    var test =  mostRight.Where(o => mostRight.All(g => !(g.Item2 <= o.Item2 && g.Item3 >= o.Item2) || (g.Item2 == o.Item2 && g.Item3 == o.Item3)));
 
-    listOfAll.Add(Int32.Parse(mostLeftValue + mostRightValue));
 
-    
+
+    var mostLeftValue = mostleft.OrderBy(x => x.Item2).Select(o=>o.Item1).First();
+    var mostRightValue = test.OrderByDescending(x => x.Item2).Select(o => o.Item1).First();
+
+   Console.WriteLine("{0} -->> {1}   {2}", line, mostLeftValue, mostRightValue);
+        
+   
+
+
+   listOfAll.Add(Int32.Parse(mostLeftValue + mostRightValue));
 }
 
 

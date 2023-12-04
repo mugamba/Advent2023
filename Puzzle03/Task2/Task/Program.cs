@@ -4,7 +4,7 @@ using System.Text;
 
 var lines = File.ReadAllLines("input.txt");
 var dictionary = new Dictionary<Tuple<int, int>, char>();
-
+var signHits = new Dictionary<Tuple<int, int>, SignHit>();
 
 char[] numbers = new char[10] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 var listOfNumber = new List<Number>();
@@ -55,7 +55,13 @@ for (int i = 0; i < lines.Length; i++)
     }
 }
 
-Console.WriteLine( listOfNumber.Where(o => o.IsMarked(dictionary)).Select(o => o.GetNumber(dictionary)).Sum());
+foreach(var number in listOfNumber) 
+{
+    number.IsMarked(dictionary, signHits);
+
+}
+
+Console.WriteLine(signHits.Select(o=>o.Value).Where(o=>o.Numbers.Count == 2).Select(o => o.Numbers[0] * o.Numbers[1]).Sum());
 Console.ReadKey();
 
 
@@ -91,7 +97,7 @@ public class Number
         return (Number)this.MemberwiseClone();
     }
 
-    public bool IsMarked(Dictionary<Tuple<int, int>, char> allsigns)
+    public bool IsMarked(Dictionary<Tuple<int, int>, char> allsigns, Dictionary<Tuple<int, int>, SignHit> signHit)
     {
         Boolean ismarked = false;
 
@@ -106,18 +112,18 @@ public class Number
             var point7 = new Tuple<int, int>(point.Item1, point.Item2 - 1);
             var point8 = new Tuple<int, int>(point.Item1, point.Item2 + 1);
 
-            ismarked = ismarked || MarkedPoint(point1, allsigns)
-                || MarkedPoint(point2, allsigns) || MarkedPoint(point3, allsigns)
-                 || MarkedPoint(point4, allsigns) || MarkedPoint(point5, allsigns)
-                  || MarkedPoint(point6, allsigns) || MarkedPoint(point7, allsigns)
-                   || MarkedPoint(point8, allsigns);
+            ismarked = ismarked || MarkedPoint(point1, allsigns, signHit)
+                || MarkedPoint(point2, allsigns, signHit) || MarkedPoint(point3, allsigns, signHit)
+                 || MarkedPoint(point4, allsigns, signHit) || MarkedPoint(point5, allsigns, signHit)
+                  || MarkedPoint(point6, allsigns, signHit) || MarkedPoint(point7, allsigns, signHit)
+                   || MarkedPoint(point8, allsigns, signHit);
         }
 
 
         return ismarked;
     }
 
-    public Boolean MarkedPoint(Tuple<int, int> point, Dictionary<Tuple<int, int>, char> allsigns)
+    public Boolean MarkedPoint(Tuple<int, int> point, Dictionary<Tuple<int, int>, char> allsigns, Dictionary<Tuple<int, int>, SignHit> signHit)
     {
         if (point.Item1 < 0 ||
             point.Item1 > (X - 1) ||
@@ -127,14 +133,52 @@ public class Number
             point.Item2 > (X - 1)
            )
           return false;
- 
+
 
         if (signs.Contains(allsigns[point]))
+        {
+            if (allsigns[point] == '*')
+            {
+                if (!signHit.ContainsKey(point))
+                {
+                    signHit[point] = new SignHit();
+                    signHit[point].NumberCoordinates.AddRange(NumberCoordinates);
+                    signHit[point].Numbers.Add(this.GetNumber(allsigns));
+                }
+                else
+                {
+                    if (!signHit[point].NumberCoordinates.Contains(point))
+                    {
+                        signHit[point].NumberCoordinates.AddRange(NumberCoordinates);
+                        signHit[point].Numbers.Add(this.GetNumber(allsigns));
+                    }
+
+                }
+
+            }
+
             return true;
-        
+        }
         return false;
   }
+}
+
+
+public class SignHit
+{
+
+    public SignHit()
+    {
+        NumberCoordinates = new List<Tuple<int, int>>();
+        Numbers = new List<int>();
+
+    }
+
+    public List<Tuple<int, int>> NumberCoordinates { get; set; }
+
+    public List<int> Numbers { get; set; }
 
 }
+
 
 
