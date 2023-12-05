@@ -45,18 +45,16 @@ if (mapper != null)
     listOfAllMapers.Add(clone);
 }
 
-
+/*Add dummy ranges from 0 to first mapper and from last mapper to Infinity, with offset 0*/
 foreach (var maper in listOfAllMapers)
 {
-    var from = maper.mappings.Min(o => o.From);
-    var to = maper.mappings.Max(o => o.To);
-    if (from > 0)
-        maper.mappings.Add(new RangeOffset(0, from - 1, 0));
+    var firstSource = maper.mappings.Min(o => o.From);
+    var lastTo = maper.mappings.Max(o => o.To);
+    if (firstSource > 0)
+        maper.mappings.Add(new RangeOffset(0, firstSource - 1, 0));
     
-    maper.mappings.Add(new RangeOffset(to+1, long.MaxValue, 0));
-
+    maper.mappings.Add(new RangeOffset(lastTo + 1, long.MaxValue, 0));
 }
-
 
 var locations = new List<Tuple<long, long>>();
 
@@ -68,8 +66,6 @@ foreach (var r in listOfRanges)
     {
       temp = map.GetDestinationRange(temp);
     }
-
-
     locations.AddRange(temp);
 }
 
@@ -80,7 +76,6 @@ Console.ReadKey();
 
 public class Mapper
 {
-
     public Mapper()
     {
 
@@ -129,9 +124,7 @@ public class Mapper
                 //if (mapping.From >= tupple.Item1 && mapping.From <= tupple.Item2 && mapping.To <= tupple.Item2)
                 //    returnList.Add(new Tuple<long, long>(mapping.From + mapping.Offset, mapping.To + mapping.Offset));
             }
-
         }
-
         return returnList;
     }
 }
