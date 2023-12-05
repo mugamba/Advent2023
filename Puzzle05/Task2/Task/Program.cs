@@ -1,13 +1,18 @@
-﻿using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿
+using System.ComponentModel.Design;
 
 var lines = File.ReadAllLines("input.txt");
 
 var listOfAllMapers = new List<Mapper>();
-var listofSeeds = new List<long>();
+var listOfRanges = new List<Tuple<long, long>>();
 var splits = lines[0].Replace("seeds:", "").Trim().Split(" ");
-listofSeeds.AddRange(splits.Select(o => long.Parse(o)));
+
+for (int i = 0; i < splits.Length; i = i + 2)
+{
+    listOfRanges.Add(new Tuple<long, long>(long.Parse(splits[i]), 
+        long.Parse(splits[i]) + long.Parse(splits[i+1])-1));
+}
+
 int counter = 0;
 
 Mapper mapper = null;
@@ -28,9 +33,10 @@ foreach (var line in lines)
     if (mapper != null && line != string.Empty)
     {
         var ls = line.Split(" ");
-        mapper.mappings.Add(new Tuple<long, long, long>(long.Parse(ls[0]), long.Parse(ls[1]), long.Parse(ls[2])));
+        mapper.mappings.Add(new RangeOffset(long.Parse(ls[1]), 
+            long.Parse(ls[1]) + long.Parse(ls[2])-1, 
+            long.Parse(ls[0]) - long.Parse(ls[1])));
     }
-
 }
 
 if (mapper != null)
@@ -40,23 +46,35 @@ if (mapper != null)
 }
 
 
-var locations = new List<long>();
-
-for (int i = 0;i<listofSeeds.Count;i=i+2)
+foreach (var maper in listOfAllMapers)
 {
+    var from = maper.mappings.Min(o => o.From);
+    var to = maper.mappings.Max(o => o.To);
+    if (from > 0)
+        maper.mappings.Add(new RangeOffset(0, from - 1, 0));
+    
+    maper.mappings.Add(new RangeOffset(to+1, long.MaxValue, 0));
 
-    for (long j = listofSeeds[i]; j < listofSeeds[i] + listofSeeds[i + 1]; j++)
-    {
-        var temp = j;
-        for (int k = 0; k < listOfAllMapers.Count; k++)
-        {
-            temp = listOfAllMapers[k].GetDestination(temp);
-        }
-
-        locations.Add(temp);
-    }
 }
-Console.WriteLine(locations.Min());
+
+
+var locations = new List<Tuple<long, long>>();
+
+foreach (var r in listOfRanges)
+{
+    var temp = new List<Tuple<long, long>>();
+    temp.Add(r);
+    foreach (var map in listOfAllMapers)
+    {
+      temp = map.GetDestinationRange(temp);
+    }
+
+
+    locations.AddRange(temp);
+}
+
+
+Console.WriteLine(locations.Min(o=>o.Item1));
 Console.ReadKey();
 
 
@@ -66,10 +84,10 @@ public class Mapper
     public Mapper()
     {
 
-        mappings = new List<Tuple<long, long, long>>();
+        mappings = new List<RangeOffset>();
     }
 
-    public List<Tuple<long, long, long>> mappings;
+    public List<RangeOffset> mappings;
 
     public Mapper GetClone()
     {
@@ -77,14 +95,63 @@ public class Mapper
     }
 
 
-    public long GetDestination(long source)
+    public List<Tuple<long, long>> GetDestinationRange(List<Tuple<long, long>> listRange)
     {
-        var mapping = mappings.Where(o => o.Item2 <= source && (o.Item2 + o.Item3) > source).FirstOrDefault();
-        if (mapping != null)
-            return source + mapping.Item1 - mapping.Item2;
 
-       return source;
+        var returnList = new List<Tuple<long, long>>();
+
+        foreach (var tupple in listRange)
+        {
+
+            foreach (var mapping in mappings)
+            {
+                if ((mapping.From <= tupple.Item1 && mapping.To >= tupple.Item1)
+                || (mapping.From <= tupple.Item2 && mapping.To >= tupple.Item2))
+                {
+                    /*bothinside*/
+                    if ((mapping.From <= tupple.Item1 && mapping.To >= tupple.Item1)
+                 && (mapping.From <= tupple.Item2 && mapping.To >= tupple.Item2))
+                        returnList.Add(new Tuple<long, long>(tupple.Item1 + mapping.Offset, tupple.Item2 + mapping.Offset));
+
+                    else
+                    {
+                        if (mapping.From <= tupple.Item1 && mapping.To >= tupple.Item1)
+                            returnList.Add(new Tuple<long, long>(tupple.Item1 + mapping.Offset, mapping.To + mapping.Offset));
+                        else
+                            returnList.Add(new Tuple<long, long>(mapping.From + mapping.Offset, tupple.Item2 + mapping.Offset));
+
+                    }
+                }
+
+                    if (tupple.Item1 <= mapping.From && tupple.Item2 >= mapping.To)
+                        returnList.Add(new Tuple<long, long>(mapping.From + mapping.Offset, mapping.To + mapping.Offset));
+
+                //if (mapping.From >= tupple.Item1 && mapping.From <= tupple.Item2 && mapping.To <= tupple.Item2)
+                //    returnList.Add(new Tuple<long, long>(mapping.From + mapping.Offset, mapping.To + mapping.Offset));
+            }
+
+        }
+
+        return returnList;
+    }
+}
+
+public class RangeOffset : IComparer<RangeOffset>
+{
+    public long From;
+    public long To;
+    public long Offset;
+
+    public RangeOffset(long from, long to, long offset)
+    {
+        From = from;
+        To = to;
+        Offset = offset;
     }
 
+    public int Compare(RangeOffset x, RangeOffset y)
+    {
+        return x.From.CompareTo(y.From);
+    }
 }
 
