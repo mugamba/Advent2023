@@ -77,7 +77,6 @@ public class BoatRace
 
     }
 
-
 }
 
 public class PossibleOutcomes
@@ -90,6 +89,5 @@ public class PossibleOutcomes
         _buttonHold = buttonHold;
         _distance = distance;
     }
-
 }
 
