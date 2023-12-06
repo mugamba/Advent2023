@@ -13,16 +13,12 @@ var lastLineSplits = lastLine.Split(" ").Where(o => !String.IsNullOrWhiteSpace(o
 
 
 var listOfallRaces = new List<BoatRace>();
+var boat = new BoatRace(long.Parse(String.Join("", firstlineSplits.Select(o=>o.Trim()))), 
+    long.Parse(String.Join("", lastLineSplits.Select(o => o.Trim()))));
 
-
-    var boat = new BoatRace(long.Parse(String.Join("", firstlineSplits.Select(o=>o.Trim()))), 
-        long.Parse(String.Join("", lastLineSplits.Select(o => o.Trim()))));
-
-    
-    long result = 0;
-
-    boat.GetFailedOutcomes();
-    result = boat._time - boat.failedOutcomes.Count();
+long result = 0;
+boat.GetFailedOutcomes();
+result = boat._time - boat.failedOutcomes.Count();
 
 Console.WriteLine(result);
 Console.ReadKey();
