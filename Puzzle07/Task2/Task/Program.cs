@@ -37,7 +37,6 @@ public class HandBid : IComparable
   { 'A', 13 },
   { 'K', 12 },
   { 'Q', 11 },
-  { 'J', 10 },
   { 'T', 9 },
   { '9', 8 },
   { '8', 7 },
@@ -46,9 +45,9 @@ public class HandBid : IComparable
   { '5', 4 },
   { '4', 3 },
   { '3', 2 },
-  { '2', 1 }
+  { '2', 1 },
+  { 'J', 0 },
 };
-
 
     public HandBid(String hand, int bid)
     {
@@ -78,23 +77,32 @@ public class HandBid : IComparable
             .Select(g => new Tuple<char, int>(g.Key, g.Count()))
             .OrderByDescending(o => o.Item2).ToList();
 
-        if (groups.Count == 1)
+        var groupsOfJJ = groups.Where(o => o.Item1 == 'J').FirstOrDefault();
+        var checkList = groups.Where(o => o.Item1 != 'J').ToList().OrderByDescending(o => o.Item2).ToList();
+
+        if (checkList.Any() && groupsOfJJ != null)
+            checkList[0] = new Tuple<char, int>(checkList[0].Item1, checkList[0].Item2 + groupsOfJJ.Item2);
+
+        if (checkList.Count == 0)
+            checkList = new List<Tuple<char, int>>() { groupsOfJJ };
+
+        if (checkList.Count == 1)
             return 7;
 
-        if (groups.Count == 2 && groups[0].Item2 == 4)
+        if (checkList.Count == 2 && checkList[0].Item2 == 4)
             return 6;
 
-        if (groups.Count == 2 && groups[0].Item2 == 3)
+        if (checkList.Count == 2 && checkList[0].Item2 == 3)
             return 5;
 
-        if (groups.Count == 3 && groups[0].Item2 == 3)
+        if (checkList.Count == 3 && checkList[0].Item2 == 3)
             return 4;
 
-        if (groups.Count == 3 && groups[0].Item2 == 2)
+        if (checkList.Count == 3 && checkList[0].Item2 == 2)
             return 3;
-        if (groups.Count == 4 && groups[0].Item2 == 2)
+        if (checkList.Count == 4 && checkList[0].Item2 == 2)
             return 2;
-        if (groups.Count == 5)
+        if (checkList.Count == 5)
             return 1;
         return 0;
     }
