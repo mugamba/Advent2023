@@ -9,6 +9,11 @@ var lines = File.ReadAllLines("input.txt");
 var dict = new Dictionary<string, Tuple<string, string>>();
 var input = lines.First();
 
+var zocc = new Dictionary<int, List<int>>();
+
+
+
+
 
 
 foreach (var line in lines.Skip(2))
@@ -26,7 +31,7 @@ foreach (var line in lines.Skip(2))
 }
 
 var counter = 0;
-var allnodes = dict.Where(o=>o.Key.EndsWith("Z")).Select(o=>o.Key).ToArray();
+var allnodes = dict.Where(o=>o.Key.EndsWith("A")).Select(o=>o.Key).ToArray();
 
 while (true)
 {
@@ -43,14 +48,37 @@ while (true)
         if (c == 'L')
         {
             for (var i = 0; i < allnodes.Length; i++)
+            {
                 allnodes[i] = dict[allnodes[i]].Item1;
-            
+                if (allnodes[i].EndsWith("Z"))
+                {
+                    if (zocc.ContainsKey(i))
+                        zocc[i].Add(counter);
+                    else
+                        zocc.Add(i, new List<int>(i));
+                }
+            }
+
         }
         else
             for (var i = 0; i < allnodes.Length; i++)
+            {
                 allnodes[i] = dict[allnodes[i]].Item2;
+                if (allnodes[i].EndsWith("Z"))
+                {
+                    if (zocc.ContainsKey(i))
+                        zocc[i].Add(counter);
+                    else
+                        zocc.Add(i, new List<int>(i));
+                }
+            }
 
-      
+
+
+
+
+
+
         counter = counter + 1;
     }
 
