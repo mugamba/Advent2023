@@ -19,6 +19,7 @@ class Program
     public static Dictionary<Point, Tuple<Point, int>> _distanceFromStart = new Dictionary<Point, Tuple<Point, int>>();
 
     public static List<Point> _pipe = new List<Point>();
+    public static List<Point> _insidePipe = new List<Point>();
 
 
     static void Main(string[] args)
@@ -144,19 +145,13 @@ class Program
         }
 
 
-        var minX = _pipe.Select(o => o.X).Min();
-        var maxX = _pipe.Select(o => o.X).Max();
+      
 
-        var minY = _pipe.Select(o => o.Y).Min();
-        var maxY = _pipe.Select(o => o.Y).Max();
+         var pictreeMap = new char[_x, _y];
 
-        int xx = maxX - minX+1;
-        int yy = maxY - minY+1;
-         var pictreeMap = new char[xx, yy];
-
-        for(int i=0; i<xx; i++) 
+        for(int i=0; i<_x; i++) 
         { 
-            for(int j=0; j<yy; j++)
+            for(int j=0; j<_y; j++)
             {
                 pictreeMap[i, j] = '.';
 
@@ -165,10 +160,53 @@ class Program
 
         foreach(var p in _pipe) 
         {
-            pictreeMap[p.X - minX, p.Y - minY] = '#';
+            pictreeMap[p.X, p.Y] = _treeMap[p.X, p.Y];
         }
 
-        printmap(pictreeMap, xx, yy);
+        for (int i = 0; i < _x; i++)
+        {
+            var lastenteringcharacter = 'c';
+            var inside = false;
+            for (int j = 0; j < _y; j++)
+            {
+                var current = pictreeMap[i, j];
+
+                if (inside == false && (current == '7' || current == 'F' || current == '-'))
+                {
+                    inside = !inside;
+                    lastenteringcharacter = current;
+                }
+                if (inside == true) 
+                {
+                    if (current == '-')
+                    {
+                        inside = !inside;
+                    }
+                    else
+                    { 
+                        if (current == 'J' && lastenteringcharacter == '7')
+                            inside = !inside;
+
+                        if (current == 'L' && lastenteringcharacter == 'F')
+                            inside = !inside;
+
+                    }
+                }
+                if (inside && current == '.')
+                {
+                    _insidePipe.Add(new Point(i, j));
+                    pictreeMap[i, j] = '@';
+
+                }
+
+            }
+
+        }
+                //    }
+                //}
+
+                printmap(pictreeMap, _x, _y);
+        Console.WriteLine(_insidePipe.Count);
         Console.ReadKey();
     }
 
