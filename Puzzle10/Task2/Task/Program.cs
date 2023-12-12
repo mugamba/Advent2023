@@ -19,6 +19,11 @@ class Program
     public static Dictionary<Point, Tuple<Point, int>> _distanceFromStart = new Dictionary<Point, Tuple<Point, int>>();
 
     public static List<Point> _pipe = new List<Point>();
+    public static char[,] _pictureMap;
+    public static int _pictureMapX;
+    public static int _pictureMapY;
+
+    public static List<Point> inside = new List<Point>();
 
 
     static void Main(string[] args)
@@ -150,25 +155,47 @@ class Program
         var minY = _pipe.Select(o => o.Y).Min();
         var maxY = _pipe.Select(o => o.Y).Max();
 
-        int xx = maxX - minX+1;
-        int yy = maxY - minY+1;
-         var pictreeMap = new char[xx, yy];
+        _pictureMapX = maxX - minX+1;
+        _pictureMapY = maxY - minY+1;
+        _pictureMap = new char[_pictureMapX, _pictureMapY];
 
-        for(int i=0; i<xx; i++) 
+        for(int i=0; i<_pictureMapX; i++) 
         { 
-            for(int j=0; j<yy; j++)
+            for(int j=0; j<_pictureMapY; j++)
             {
-                pictreeMap[i, j] = '.';
+                _pictureMap[i, j] = '.';
 
             }
         }
 
         foreach(var p in _pipe) 
         {
-            pictreeMap[p.X - minX, p.Y - minY] = '#';
+            _pictureMap[p.X - minX, p.Y - minY] = '#';
         }
 
-        printmap(pictreeMap, xx, yy);
+        printmap(_pictureMap, _pictureMapX, _pictureMapY);
+
+        var count = 0;
+        for (int i = 0; i < _pictureMapX; i++)
+        {
+            Boolean isInside = false;
+            for (int j = 0; j < _pictureMapY; j++)
+            {
+
+                if (_pictureMap[i, j] == '#')
+                {
+                    /* flip when cross */
+                    isInside = !isInside;
+                }
+
+                if (isInside && _pictureMap[i, j] == '.')
+                    inside.Add(new Point(i, j));
+
+             }
+        }
+
+
+        Console.WriteLine(inside.Count);
         Console.ReadKey();
     }
 
@@ -186,9 +213,8 @@ class Program
             Console.WriteLine();
         }
 
-
-
     }
+
 
     public static void VisitNode(int x, int y)
     {
