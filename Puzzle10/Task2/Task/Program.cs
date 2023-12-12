@@ -49,8 +49,6 @@ class Program
             }
 
 
-
-
         var startNeighbours = new List<Point>();
 
         var x = _start.Item1;
@@ -160,8 +158,14 @@ class Program
 
         foreach(var p in _pipe) 
         {
-            pictreeMap[p.X, p.Y] = _treeMap[p.X, p.Y];
+            if (_treeMap[p.X, p.Y] == 'S')
+                pictreeMap[p.X, p.Y] = 'F';
+            else
+                pictreeMap[p.X, p.Y] = _treeMap[p.X, p.Y];
         }
+
+
+
 
         for (int i = 0; i < _x; i++)
         {
@@ -171,27 +175,21 @@ class Program
             {
                 var current = pictreeMap[i, j];
 
-                if (inside == false && (current == '7' || current == 'F' || current == '-'))
+                if (current == '7' || current == 'F' || current == '-')
                 {
                     inside = !inside;
                     lastenteringcharacter = current;
                 }
-                if (inside == true) 
+                if (current == 'J' && lastenteringcharacter == '7')
                 {
-                    if (current == '-')
-                    {
-                        inside = !inside;
-                    }
-                    else
-                    { 
-                        if (current == 'J' && lastenteringcharacter == '7')
-                            inside = !inside;
-
-                        if (current == 'L' && lastenteringcharacter == 'F')
-                            inside = !inside;
-
-                    }
+                    inside = !inside;
                 }
+                if (current == 'L' && lastenteringcharacter == 'F')
+                {
+                    inside = !inside;
+                }
+
+
                 if (inside && current == '.')
                 {
                     _insidePipe.Add(new Point(i, j));
@@ -202,10 +200,10 @@ class Program
             }
 
         }
-                //    }
-                //}
+        //    }
+        //}
 
-                printmap(pictreeMap, _x, _y);
+        printmap(pictreeMap, _x, _y);
         Console.WriteLine(_insidePipe.Count);
         Console.ReadKey();
     }
