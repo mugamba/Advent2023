@@ -6,11 +6,8 @@ using static System.Net.Mime.MediaTypeNames;
 class Program
 {
 
-    public static int _x;
-    public static int _y;
     
    
-    public static Dictionary<Point, char> _map = new Dictionary<Point, char>();
     public static List<int> nextStartIndex = new List<int>();
 
 
@@ -32,23 +29,27 @@ class Program
         foreach (var delimiter in nextStartIndex)
         {
 
-            _x = lines[startindex].Length;
-            _y = delimiter - 1 - startindex;
-            _map.Clear();
+            var x = lines[startindex].Length;
+            var y = delimiter - 1 - startindex;
+            var map = new Dictionary<Point, char>();
 
-            for (int i = 0; i < _x; i++)
+            for (int i = 0; i < x; i++)
             {
                 for (int j = startindex; j < delimiter - 1; j++)
                 {
-                    _map.Add(new Point(i, j - startindex), lines[j].ToCharArray()[i]);
+                    map.Add(new Point(i, j - startindex), lines[j].ToCharArray()[i]);
                 }
             }
 
+            var tile = new Tile(map, x, y);
 
-            printmap(_x, _y);
+            //printmap(_x, _y);
 
-            Console.WriteLine();
-            Console.WriteLine();
+            Console.WriteLine("Matching columns = {0}   {1}", tile.MatchingNeighboursColumns().Item1, 
+                tile.MatchingNeighboursColumns().Item2) ;
+            Console.WriteLine("Matching rows = {0}   {1}", tile.MatchingNeighboursRows().Item1,
+              tile.MatchingNeighboursRows().Item2);
+            //Console.WriteLine();
             startindex = delimiter; 
 
         }
@@ -61,13 +62,13 @@ class Program
     }
 
 
-    public static void printmap(int x, int y)
+    public static void printmap(Dictionary<Point, char> dict,  int x, int y)
     {
         for (int i = 0; i < y; i++)
         {
             for (int j = 0; j < x; j++)
             {
-                Console.Write(_map[new Point(j, i)]);
+                Console.Write(dict[new Point(j, i)]);
             }
             Console.WriteLine();
         }
@@ -75,7 +76,95 @@ class Program
     }
 
 
-    public class
+
+    public class Tile
+    {
+        public int _x;
+        public int _y;
+
+
+        public Dictionary<Point, char> _map = new Dictionary<Point, char>();
+
+        public Tile(Dictionary<Point, char> dict, int x, int y)
+        {
+            _map = dict;
+            _x = x;
+            _y = y;
+        }
+
+
+        public Boolean CheckRowReflection()
+        { 
+        
+            
+        
+        }
+
+        public Boolean CheckColumnReflection()
+        {
+
+
+
+        }
+
+
+        public Boolean IsMatchingColumn(int x1, int x2)
+        {
+            var target1 = _map.Where(o => o.Key.X == x1).Select(o => o.Value);
+            var target2 = _map.Where(o => o.Key.X == x2).Select(o => o.Value);
+
+            return Enumerable.SequenceEqual(target1, target2);
+        }
+
+        public Boolean IsMatchingRow(int y1, int y2)
+        {
+            var target1 = _map.Where(o => o.Key.Y == y1).Select(o => o.Value);
+            var target2 = _map.Where(o => o.Key.Y == y2).Select(o => o.Value);
+
+            return Enumerable.SequenceEqual(target1, target2);
+        }
+
+        public Tuple<int, int> MatchingNeighboursColumns()
+        {
+
+            for (int i = 0; i < _x; i++)
+            {
+                if (i > 0)
+                {
+                    if (IsMatchingColumn(i - 1, i))
+                        return new Tuple<int, int>(i-1, i);
+                }
+
+            }
+
+            return new Tuple<int, int>(-1, -1);
+        
+        }
+
+        public Tuple<int, int> MatchingNeighboursRows()
+        {
+
+            for (int i = 0; i < _y; i++)
+            {
+                if (i > 0)
+                {
+                    if (IsMatchingRow(i - 1, i))
+                        return new Tuple<int, int>(i - 1, i);
+                }
+
+            }
+
+            return new Tuple<int, int>(-1, -1);
+
+        }
+
+
+
+
+    }
+
+
+
 
    
 }
