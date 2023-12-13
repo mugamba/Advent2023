@@ -19,7 +19,7 @@ class Program
 
             _list.Clear();
             GetAllPosibleValues(new List<char>(), splits[0], 0);
-            sum +=  _list.Where(o => IsMatch(o, splits[1])).Count();
+            var list = _list.Where(o => IsMatch(o, splits[1])).ToList();
 
         }
         Console.WriteLine(sum);
