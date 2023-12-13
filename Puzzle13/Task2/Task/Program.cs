@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Xml.Linq;
 using static Program;
@@ -54,15 +55,14 @@ class Program
             startindex = delimiter; 
 
         }
-        var to = _tiles.Where(o => o.CalculateWeight() == 0).FirstOrDefault();
+      //  var to = _tiles.Where(o => o.CalculateWeightSmudge() == 0).FirstOrDefault();
 
 
         var sum = 0;
         foreach (var t in _tiles)
         {
-            var tt = t.CalculateWeight();
+            var tt = t.CalculateWeightSmudge();
             Console.WriteLine(tt);
-            Console.WriteLine("");
             sum += tt;
 
         }
@@ -95,30 +95,76 @@ class Program
         public int _x;
         public int _y;
 
+        public Tuple<int, int> _rMir;
+        public Tuple<int, int> _cMir;
+
 
         public Dictionary<Point, char> _map = new Dictionary<Point, char>();
+
 
         public Tile(Dictionary<Point, char> dict, int x, int y)
         {
             _map = dict;
             _x = x;
             _y = y;
-        }
-
-
-        public Int32 CalculateWeight()
-        {  
-            return CheckRowReflection() + CheckColumnReflection();
-
+            _rMir = CheckRowReflection();
+            _cMir = CheckColumnReflection();
         }
 
 
 
-        public Int32 CheckRowReflection()
+
+
+        public Int32 CalculateWeightSmudge()
+        {
+
+            for (int i = 0; i < _x; i++)
+            {
+                for (int j = 0; j < _y; j++)
+                {
+                    var point = new Point(i, j);
+
+                    if (_map[point] == '.')
+                        _map[point] = '#';
+                    else
+                        _map[point] = '.';
+
+
+                    var tup1 = CheckRowReflection();  
+                    var tup2 = CheckColumnReflection();
+
+                    if (tup1.Item1 != -1 && !tup1.Equals(_rMir))
+                        return (tup1.Item1 + 1) * 100;
+
+                    if (tup2.Item1 != -1 && !tup2.Equals(_cMir))
+                        return tup2.Item1 +1;
+
+
+                    if (_map[point] == '.')
+                        _map[point] = '#';
+                    else
+                        _map[point] = '.';
+
+                }
+
+            }
+            return 0;
+        }
+
+        private char InvertChar(char c)
+        {
+            if (c == '#')
+                return '.';
+            else
+                return '#';
+
+        }
+
+        public Tuple<int, int> CheckRowReflection()
         {
             var tuples = MatchingNeighboursRows();
 
-            var result = 0;
+            var result = new Tuple<int, int>(-1, -1);
             foreach (var tuple in tuples)
             {
                 if (tuple.Item1 != -1)
@@ -133,28 +179,26 @@ class Program
                             break;
                         }
                     }
-                    
+
                     if (toContinue)
                         continue;
 
-                    result = (tuple.Item1 + 1) * 100;
-                    
+                    if (!tuple.Equals(_rMir))
+                        return tuple;
+
                 }
                 else
                     continue;
             }
 
             return result;
-
-
-
-
         }
 
-        public Int32 CheckColumnReflection()
+    
+        public Tuple<int, int> CheckColumnReflection()
         {
             var tuples = MatchingNeighboursColumns();
-            var result = 0;
+            var result = new Tuple<int, int>(-1, -1);
             foreach (var tuple in tuples)
             {
                 if (tuple.Item1 != -1)
@@ -172,18 +216,14 @@ class Program
                     if (toContinue)
                         continue;
 
-                    result = tuple.Item1 + 1;
-
-
+                    if (!tuple.Equals(_cMir))
+                        return tuple;
                 }
                 else
                     continue;
             }
 
             return result;
-
-
-
         }
 
 
