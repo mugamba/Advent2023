@@ -17,9 +17,29 @@ class Program
         {
             var splits = line.Split(' ');
 
-            _list.Clear();
-            GetAllPosibleValues(new List<char>(), splits[0], 0);
-            var list = _list.Where(o => IsMatch(o, splits[1])).ToList();
+            var temp = GetAllPosibleValues(new List<char>(), splits[0], 0, new List<string>());
+            var firstMatchString = splits[1];
+            for (int i = 0; i < 4; i++)
+            {
+                var t1 = GetAllPosibleValues(new List<char>(), "?" + splits[0], 0, new List<string>());
+             
+                temp = CombineStringLists(temp, t1);
+                firstMatchString = firstMatchString + "," + splits[1];
+                temp = CombineStringLists(temp, t1);
+                firstMatchString = firstMatchString + "," + splits[1];
+              
+                temp = temp.Where(o => IsMatch(o, firstMatchString)).ToList();
+            }
+            
+            
+           
+
+
+
+
+
+
+           
 
         }
         Console.WriteLine(sum);
@@ -27,15 +47,25 @@ class Program
 
     }
 
+    public static List<String> CombineStringLists(IList<string> list1, IList<string> list2)
+    { 
+        var list = new List<String>();
+            foreach (var item in list1)
+                foreach (var item2 in list2)
+                    list.Add(item+item2);
+    
+    
+            return list;
+    }
 
-
-    public static void GetAllPosibleValues(List<char> currentString, string inputLine, int index)
+    public static IList<String> GetAllPosibleValues(List<char> currentString, string inputLine, int index, IList<string> strings)
     {
+
 
         if (inputLine.Length == index)
         {
-            _list.Add(String.Join(string.Empty, currentString));             
-            return;
+            strings.Add(String.Join(string.Empty, currentString));             
+            return strings;
         }
 
         if (inputLine[index] == '?')
@@ -46,15 +76,20 @@ class Program
             var secondLine = currentString.ToList();
             secondLine.Add('.');
 
-            GetAllPosibleValues(firstLine, inputLine, index + 1);
-            GetAllPosibleValues(secondLine, inputLine, index + 1);
+            GetAllPosibleValues(firstLine, inputLine, index + 1, strings);
+            GetAllPosibleValues(secondLine, inputLine, index + 1, strings);
         }
         else
         {
-            var firstLine = currentString.ToList();
-            firstLine.Add(inputLine[index]);
-            GetAllPosibleValues(firstLine, inputLine, index + 1);
-        } 
+            var firstLines = currentString.ToList();
+            firstLines.Add(inputLine[index]);
+            GetAllPosibleValues(firstLines, inputLine, index + 1, strings);
+        }
+
+        return strings.ToList();
+
+
+
     }
 
     public static Boolean IsMatch(string input, string pattern)
