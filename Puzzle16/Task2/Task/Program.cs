@@ -12,7 +12,7 @@ class Program
     public static Dictionary<Point, char> _map = new Dictionary<Point, char>();
     public static Dictionary<Point, Boolean> _isEnergized = new Dictionary<Point, Boolean>();
     public static Dictionary<Tuple<Point, char>, int> _memo = new Dictionary<Tuple<Point, char>, int>();
-
+    public static List<int> allResults = new List<int>();
 
     static void Main(string[] args)
     {
@@ -25,79 +25,113 @@ class Program
             for (int j = 0; j < _y; j++)
             {
                 _map.Add(new Point(i, j), lines[j].ToCharArray()[i]);
-                _isEnergized.Add(new Point(i, j), false);
                 
             }
 
 
-        DoNextPoint('>', new Point(0, 0));
-
 
         var most = 0;
-        //for (int i = 0; i < _x; i++)
-        //{
-        //    foreach (var v in _mapEnergy)
-        //        v.Value.Clear();
+        for (int i = 0; i < _x; i++)
+        {
 
-        //    DoNextPoint('v',  new Point(i, 0));
+            _isEnergized.Clear();
+            _memo.Clear();
 
-        //    var temp = _mapEnergy.Where(o => o.Value.Count() > 0).Count();
-        //    if (temp > most) {
-            
-        //        most = temp;
-        //    }
-           
-        //}
-        //for (int i = 0; i < _x; i++)
-        //{
-        //    foreach (var v in _mapEnergy)
-        //        v.Value.Clear();
+            var temp = new List<Tuple<char, Point>>();
+            temp.Add(new Tuple<char, Point>('v', new Point(i, 0)));
+            while (temp.Count > 0)
+            {
 
-        //    DoNextPoint('^', new Point(i, _y));
+                var list = temp.ToList();
+                temp.Clear();
 
-        //    var temp = _mapEnergy.Where(o => o.Value.Count() > 0).Count();
-        //    if (temp > most)
-        //    {
-
-        //        most = temp;
-        //    }
-
-        //}
-        //for (int j = 0; j < _y; j++)
-        //{
-        //    foreach (var v in _mapEnergy)
-        //        v.Value.Clear();
-
-        //    DoNextPoint('>', new Point(0, j));
-
-        //    var temp = _mapEnergy.Where(o => o.Value.Count() > 0).Count();
-        //    if (temp > most)
-        //    {
-
-        //        most = temp;
-        //    }
-
-        //}
-        //for (int j = 0; j < _y; j++)
-        //{
-        //    foreach (var v in _mapEnergy)
-        //        v.Value.Clear();
-
-        //    DoNextPoint('<', new Point(_x, j));
-
-        //    var temp = _mapEnergy.Where(o => o.Value.Count() > 0).Count();
-        //    if (temp > most)
-        //    {
-
-        //        most = temp;
-        //    }
-
-        //}
+                foreach (var item in list)
+                    temp.AddRange(DoNextPoint(item.Item1, item.Item2));
 
 
 
-        //Console.WriteLine(most);
-        Console.ReadLine();
+            }
+            allResults.Add(_isEnergized.Count);
+
+        }
+
+
+        for (int i = 0; i < _x; i++)
+        {
+
+            _isEnergized.Clear();
+            _memo.Clear();
+
+            var temp = new List<Tuple<char, Point>>();
+            temp.Add(new Tuple<char, Point>('^', new Point(i, _y-1)));
+            while (temp.Count > 0)
+            {
+
+                var list = temp.ToList();
+                temp.Clear();
+
+                foreach (var item in list)
+                    temp.AddRange(DoNextPoint(item.Item1, item.Item2));
+
+
+
+            }
+
+            allResults.Add(_isEnergized.Count);
+                
+
+        }
+        for (int j = 0; j < _y; j++)
+        {
+            _isEnergized.Clear();
+            _memo.Clear();
+
+
+            var temp = new List<Tuple<char, Point>>();
+            temp.Add(new Tuple<char, Point>('>', new Point(0, j)));
+            while (temp.Count > 0)
+            {
+
+                var list = temp.ToList();
+                temp.Clear();
+
+                foreach (var item in list)
+                    temp.AddRange(DoNextPoint(item.Item1, item.Item2));
+
+
+
+            }
+
+            allResults.Add(_isEnergized.Count);
+
+        }
+        for (int j = 0; j < _y; j++)
+        {
+            _isEnergized.Clear();
+            _memo.Clear();
+
+            var temp = new List<Tuple<char, Point>>();
+            temp.Add(new Tuple<char, Point>('<', new Point(_x-1, j)));
+            while (temp.Count > 0)
+            {
+
+                var list = temp.ToList();
+                temp.Clear();
+
+                foreach (var item in list)
+                    temp.AddRange(DoNextPoint(item.Item1, item.Item2));
+
+
+
+            }
+
+            allResults.Add(_isEnergized.Count);
+        }
+
+
+
+        Console.WriteLine(allResults.Max());
+            Console.ReadLine();
 
 
     }
@@ -116,111 +150,115 @@ class Program
 
     }
 
-    public static Int32 DoNextPoint(char direction, Point nextPoint, int value)
+    public static IList<Tuple<char, Point>> DoNextPoint(char direction, Point nextPoint)
     {
+        var list = new List<Tuple<char, Point>>();
+
+        
         var left  = nextPoint.X < 0;
         var right = nextPoint.X >= _x;
         var up = nextPoint.Y < 0;
         var down = nextPoint.Y >= _y;
 
         if (left || right  || up || down)
-            return value;
+            return list;
 
 
         var nextSign = _map[nextPoint];
         var newMemo = new Tuple<Point, char>(nextPoint, direction);
 
         if (_memo.ContainsKey(newMemo))
-            return value + _memo[newMemo];
+            return list;
+
+        _memo.Add(newMemo, 0);
 
 
-        if (_isEnergized[nextPoint])
+        if (!_isEnergized.ContainsKey(nextPoint))
         {
-            _isEnergized[nextPoint] = true;
-            value = value + 1;
+            _isEnergized.Add(nextPoint, true);
         }
         /*energize*/
         if (nextSign == '.')
         {
            
             if (direction == '>')
-              value = DoNextPoint(direction, new Point(nextPoint.X + 1, nextPoint.Y), value);
+                list.Add(new Tuple<char, Point>(direction, new Point(nextPoint.X + 1, nextPoint.Y)));
             if (direction == '<')
-              value = DoNextPoint(direction, new Point(nextPoint.X - 1, nextPoint.Y), value);
+                list.Add(new Tuple<char, Point>(direction, new Point(nextPoint.X - 1, nextPoint.Y)));
             if (direction == 'v')
-              value = DoNextPoint(direction, new Point(nextPoint.X, nextPoint.Y+1), value);
+                list.Add(new Tuple<char, Point>(direction, new Point(nextPoint.X, nextPoint.Y+1)));
             if (direction == '^')
-              value = DoNextPoint(direction, new Point(nextPoint.X, nextPoint.Y-1), value);
+                list.Add(new Tuple<char, Point>(direction, new Point(nextPoint.X, nextPoint.Y-1)));
 
         }
 
         if (nextSign == '|' && (direction == '>' || direction == '<'))
         {
-            value = DoNextPoint('^', new Point(nextPoint.X, nextPoint.Y - 1)) +  DoNextPoint('v', new Point(nextPoint.X, nextPoint.Y + 1));
+            list.Add(new Tuple<char, Point>('^', new Point(nextPoint.X, nextPoint.Y - 1)));
+            list.Add(new Tuple<char, Point>('v', new Point(nextPoint.X, nextPoint.Y + 1)));
         }
         if (nextSign == '|' && direction == '^')
         {
-            DoNextPoint('^', new Point(nextPoint.X, nextPoint.Y - 1));           
+            list.Add(new Tuple<char, Point>('^', new Point(nextPoint.X, nextPoint.Y - 1)));           
         }
         if (nextSign == '|' && direction == 'v')
         {
-            DoNextPoint('v', new Point(nextPoint.X, nextPoint.Y + 1));
+            list.Add(new Tuple<char, Point>('v', new Point(nextPoint.X, nextPoint.Y + 1)));
         }
 
 
         if (nextSign == '-' && (direction == '^' || direction == 'v'))
         {
-            DoNextPoint('<', new Point(nextPoint.X-1, nextPoint.Y));
-            DoNextPoint('>', new Point(nextPoint.X+1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('<', new Point(nextPoint.X-1, nextPoint.Y)));
+            list.Add(new Tuple<char, Point>('>', new Point(nextPoint.X+1, nextPoint.Y)));
         }
         if (nextSign == '-' && direction == '<')
         {
-            DoNextPoint('<', new Point(nextPoint.X - 1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('<', new Point(nextPoint.X - 1, nextPoint.Y)));
         }
         if (nextSign == '-' && direction == '>')
         {
-            DoNextPoint('>', new Point(nextPoint.X + 1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('>', new Point(nextPoint.X + 1, nextPoint.Y)));
         }
 
 
         if (nextSign == '\\' && direction == '>')
         {
-            DoNextPoint('v', new Point(nextPoint.X, nextPoint.Y+1));
+            list.Add(new Tuple<char, Point>('v', new Point(nextPoint.X, nextPoint.Y+1)));
         }
         if (nextSign == '\\' && direction == '<')
         {
-            DoNextPoint('^', new Point(nextPoint.X, nextPoint.Y - 1));
+            list.Add(new Tuple<char, Point>('^', new Point(nextPoint.X, nextPoint.Y - 1)));
         }
         if (nextSign == '\\' && direction == '^')
         {
-            DoNextPoint('<', new Point(nextPoint.X-1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('<', new Point(nextPoint.X-1, nextPoint.Y)));
         }
         if (nextSign == '\\' && direction == 'v')
         {
-            DoNextPoint('>', new Point(nextPoint.X+1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('>', new Point(nextPoint.X+1, nextPoint.Y)));
         }
 
         if (nextSign == '/' && direction == '>')
         {
-            DoNextPoint('^', new Point(nextPoint.X, nextPoint.Y - 1));
+            list.Add(new Tuple<char, Point>('^', new Point(nextPoint.X, nextPoint.Y - 1)));
         }
         if (nextSign == '/' && direction == '<')
         {
-            DoNextPoint('v', new Point(nextPoint.X, nextPoint.Y + 1));
+            list.Add(new Tuple<char, Point>('v', new Point(nextPoint.X, nextPoint.Y + 1)));
         }
         if (nextSign == '/' && direction == '^')
         {
-            DoNextPoint('>', new Point(nextPoint.X + 1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('>', new Point(nextPoint.X + 1, nextPoint.Y)));
         }
         if (nextSign == '/' && direction == 'v')
         {
-            DoNextPoint('<', new Point(nextPoint.X - 1, nextPoint.Y));
+            list.Add(new Tuple<char, Point>('<', new Point(nextPoint.X - 1, nextPoint.Y)));
         }
 
-        if (_memo.ContainsKey(newMemo))
-        _memo.Add(newMemo, value);
+      
 
-        return value;
+        return list;
 
     }
 
