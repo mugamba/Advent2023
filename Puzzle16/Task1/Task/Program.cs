@@ -33,27 +33,7 @@ class Program
 
         Console.WriteLine(temp);
         Console.ReadLine();
-
-
-        var most = 0;
-        for (int i = 0; i < _x; i++)
-        {
-            foreach (var v in _mapEnergy)
-                v.Value.Clear();
-
-            DoNextPoint('>', new Point(0, 0));
-
-            var temp = _mapEnergy.Where(o => o.Value.Count() > 0).Count();
-            if (temp > most) {
-            
-                most = temp;
-            }
-           
-        }
-
-
-        Console.WriteLine(most);
-        Console.ReadLine();
+      
 
 
     }
