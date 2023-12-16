@@ -19,63 +19,11 @@ class Program
 
         var x = lines.First().Length;
         var y = lines.Count();
+        var t = (1000000000 - 480) % 26;
 
 
 
-        var dict = new Dictionary<Point, char>();
-
-        for (int i = 0; i < x; i++)
-        {
-            for (int j = 0; j < y; j++)
-            {
-                var c = lines[j].ToCharArray()[i];
-                if (c != '.')
-                    dict.Add(new Point(i, j), lines[j].ToCharArray()[i]);
-            }
-        }
-
-        var tile = new Tile(dict, x, y);
-    
-        
-        //var test = dictCopy.Count == tile._map.Count && !dictCopy.Except(tile._map).Any();
-        var count = 0;
-        for (int i = 0; i < 1000000000; i++)
-        {
-
-            //var dictCopy = dict.ToDictionary(entry => entry.Key,
-            //                                   entry => entry.Value);
-
-            ///  printmap(tile._map, x, y);
-            tile.DoNorth();
-            tile.DoWest();
-            tile.DoSouth();
-            tile.DoEast();
-
-
-
-            /*test if its sam as before starts to repeat*/
-           // var test = dictCopy.Count == tile._map.Count && !dictCopy.Except(tile._map).Any();
-
-            if (i>100000)
-            {
-                break;
-            }
-
-
-            Console.WriteLine("{0}-{1}", i, 
-            tile.CalculateWeight());
-
-            //printmap(tile._map, x, y);
-            //Console.WriteLine("--------");
-            //Console.WriteLine("--------");
-
-        }
-
-
-
-         printmap(tile._map, x, y);
-
-        Console.WriteLine(tile.CalculateWeight());
+      //  Console.WriteLine(tile.CalculateWeight());
         Console.ReadLine();
 
         //for (int i = 0; i < 1000000000; i++)
