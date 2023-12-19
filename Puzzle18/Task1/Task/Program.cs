@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Text;
 using System.Xml.Linq;
 using static Program;
 using static System.Net.Mime.MediaTypeNames;
@@ -14,7 +15,7 @@ class Program
     public static Dictionary<Point, int> _border = new Dictionary<Point, int>();
     public static List<Point> _inside = new List<Point>();
     public static List<Point> _borderEnds = new List<Point>();
-   
+    public static Dictionary<Point, int> _borderOfsset= new Dictionary<Point, int>();
 
     static void Main(string[] args)
     {
@@ -40,8 +41,8 @@ class Program
         var x = maxX - minX  + 1;
         var y = maxY - minY + 1;
 
-        var offsetX = 0 + minX;
-        var offsetY = 0 + minY;
+        var offsetX = 0 - minX;
+        var offsetY = 0 - minY;
 
 
         _cubeMap = new char[x, y];
@@ -49,77 +50,86 @@ class Program
         for (int i = 0; i < x; i++)
             for (int j = 0; j < y; j++)
             {
-                if (_border.ContainsKey(new Point(i + offsetX, j + offsetY)))
+                if (_border.ContainsKey(new Point(i - offsetX, j - offsetY)))
                         _cubeMap[i, j] = '#';
                 else
                     _cubeMap[i, j] = '.';
 
             }
 
+
         for (int i = 0; i < x; i++)
+        {
+
+            var left = '.';
+            var right = '.';
+            var lastchar = '.';
+            var inside = false;
+            var lastbreakingCharacter = 'F';
+
+
             for (int j = 0; j < y; j++)
             {
-                if (_cubeMap[i, j] == '.')
+                if (i > 0)
+                    left = _cubeMap[i - 1, j];
+                if (i < x-1)
+                    right = _cubeMap[i + 1, j];
+
+                var current = _cubeMap[i, j];
+
+                if (lastchar == '.' && current == '#')
                 {
-                   var minnY = _border.Where(o => o.Key.X == i).Min(o=>o.Key.Y);
-                   var maxxY =  _border.Where(o => o.Key.X == i).Max(o => o.Key.Y);
-                    var minnX = _border.Where(o => o.Key.Y == j).Min(o => o.Key.X);
-                    var maxxX = _border.Where(o => o.Key.Y == j).Max(o => o.Key.X);
+                    inside = !inside;
+                    if (left == '.' && right == '.')
+                        lastbreakingCharacter = '-';
 
-                    if (minX <= i && maxX >= i && minnY <= j && maxxY >= j)
-                        _inside.Add(new Point(i, j));
+                    if (left == '#' && right == '.')
+                        lastbreakingCharacter = '7';
 
+                    if (left == '.' && right == '#')
+                        lastbreakingCharacter = 'F';
 
-
+                    if (left == '#' && right == '#')
+                        lastbreakingCharacter = '-';
 
                 }
 
+                if (lastchar == '#' && current == '#' && lastbreakingCharacter == 'F')
+                {
+                    if (left == '.' && right == '#')
+                    { 
+                        inside = !inside;
+
+                    }
+                }
+
+                if (lastchar == '#' && current == '#' && lastbreakingCharacter == '7')
+                {
+                    if (left == '#' && right == '.')
+                    {
+                        inside = !inside;
+
+                    }
+                }
+
+                if (inside && _cubeMap[i, j] == '.')
+                { 
+                    _inside.Add(new Point(i, j));
+
+                }
+                lastchar = current;
 
             }
-                
 
-
-        //_borderEnds.Add(new Point(0, 0));
-        //_borderEnds.Add(new Point(0, -3));
-        //_borderEnds.Add(new Point(3, -3));
-        //_borderEnds.Add(new Point(3, 0));
-        
-
-
-
-        //var sum = 0;
-        //for (int i = 0; i < _borderEnds.Count; i++)
-        //{
-        //    Point last = new Point(0, 0);
-        //    var current = _borderEnds[i]; 
-        //    if (i == 0)
-        //        last = _borderEnds[_borderEnds.Count - 1];
-        //    else
-        //        last = _borderEnds[i - 1];
-
-        //   sum = sum + (last.X * current.Y - last.Y * current.X);
-        //}
-
-        var sum = 0;
-        for (int i = 1; i < _borderEnds.Count+1; i++)
-        {
-            Point last = _borderEnds[i-1];
-            Point current;
-            if (i == _borderEnds.Count)
-                current = new Point(0,0);
-            else
-                current = _borderEnds[i];
-
-            var test = (current.X * last.Y - last.X * current.Y);
-            sum = sum + test;
-            Console.WriteLine("{0}  {1}", test, sum);
         }
 
 
-        Math.Abs(sum);
-        printmap(_cubeMap, x, y);
+        foreach (var i in _inside)
+            _cubeMap[i.X, i.Y] = '#';
 
-        Console.WriteLine(sum/2);
+                printmap(_cubeMap, x, y);
+
+        Console.WriteLine(_inside.Count + _border.Count);
         Console.ReadKey();
     }
 
@@ -197,16 +207,18 @@ class Program
     public static void printmap(char[,] array, int x, int y)
     {
 
+        var builder = new StringBuilder();
         for (int i = 0; i < y; i++)
         {
             for (int j = 0; j < x; j++)
             {
-                Console.Write(array[j, i]);
+               builder.Append(array[j,i]);
                 
 
             }
-            Console.WriteLine();
+            builder.AppendLine();
         }
+        File.WriteAllText(@"C:\Temp\test.txt", builder.ToString());
 
     }
 

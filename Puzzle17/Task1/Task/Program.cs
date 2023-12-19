@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Xml.Linq;
 
 
@@ -12,9 +13,9 @@ class Program
     public static Point _startPipe;
     public static Point _endPipe;
 
-    public static Dictionary<Point, int> _visited = new Dictionary<Point, int>();
-    public static Dictionary<Point, int> _unvisited = new Dictionary<Point, int>();
-    public static Dictionary<Point, PreviousNode> _distanceFromStart = new Dictionary<Point, PreviousNode>();
+    public static Dictionary<Node, int> _visited = new Dictionary<Node, int>();
+    public static Dictionary<Node, int> _unvisited = new Dictionary<Node, int>();
+    public static Dictionary<Node, int> _distanceFromStart = new Dictionary<Node, int>();
 
   
 
@@ -45,9 +46,20 @@ class Program
             for (int j = 0; j < _y; j++)
             {
                 if (_startPipe.X == i && _startPipe.Y == j)
-                    _distanceFromStart.Add(new Point(i, j), new PreviousNode(new Point(i, j), 0));
+                    _distanceFromStart.Add(new Node(new Point(0, 0), new Point(0, 0)), 0);
 
-                _unvisited.Add(new Point(i, j), 0);
+                if (i>0)
+                    _unvisited.Add(new Node(new Point(i, j), new Point(i-1, j)), 0);
+
+                if (i < _x-1)
+                    _unvisited.Add(new Node(new Point(i, j), new Point(i + 1, j)), 0);
+
+                if (j > 0)
+                    _unvisited.Add(new Node(new Point(i, j), new Point(i, j-1)), 0);
+
+                if (j < _y - 1)
+                    _unvisited.Add(new Node(new Point(i, j), new Point(i, j+1)), 0);
+
             }
 
         while (_unvisited.Count > 0)
@@ -85,19 +97,18 @@ class Program
     }
 
 
-    public static void VisitNode(int x, int y)
+    public static void VisitNode(Node node)
     {
-        var cr = new Point(x, y);
-
+   
         var cantMoveLeft = false; 
         var cantMoveRight = false;
         var cantMoveUp = false;
         var cantMoveDown = false;
 
 
-        if (_distanceFromStart.ContainsKey(cr))
+        if (_distanceFromStart.ContainsKey(node))
         {
-            PreviousNode previousOne = _distanceFromStart[cr];
+            Point previousOne = node._neighbour;
 
             if (previousOne != null && _distanceFromStart.ContainsKey(previousOne._point))
             {
@@ -200,17 +211,33 @@ class Program
         }
     }
 
-    public class PreviousNode
+    public struct Node
     {
-        public Point _point;
-        public int _distance;
-    
-        public PreviousNode(Point point, int distance)
-        {
-            _point = point;
-            _distance = distance;
+        public Point _current;
+        public Point _neighbour;
+      
+        public Node(Point current, Point neighbour)
+        { 
+        
+            _current = current;
+            _neighbour = neighbour;
+            
         }
+
+
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+            var curr = obj is Node;
+            if (!curr)
+                return false;
+
+            return ((Node)obj)._current.Equals(this._current) && ((Node)obj)._neighbour.Equals(this._neighbour); 
+        }
+
     }
+
 
 }
 
